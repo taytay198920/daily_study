@@ -1,0 +1,35 @@
+{%  extends 'base.html' %}
+{% block title %}
+Index
+{% endblock %}
+{% block contents %}
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4 my-4">
+    <h3><i class="bi bi-balloon-fill" style="color: blue"></i> Test Setup</h3>
+    <button class="btn btn-primary" id="addNewGroupBtn"><i class="bi bi-plus-circle"></i> Add a new group</button>
+</div>
+<div class="card">
+    <div class="card-header">
+        <strong>Test Group List</strong>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 test-config-table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px">No.</th>
+                        <th>Client</th>
+                        <th>Server</th>
+                        <th>Switch</th>
+                        <th>Ethernet Cable</th>
+                        <th style="width: 100px">Status</th>
+                        <th style="width: 280px">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="7" class="text-center text-muted py-4">暂无测试组，点击 "Add a new group" 添加新的测试组合</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
