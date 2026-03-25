@@ -1,0 +1,11 @@
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Roboto, system-ui, -apple-system;
+}
+footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: #6c757d;
+    padding: 1rem 0;
+    border-top: 1px solid #e3e6ea;
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='icons/font/bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+</head>
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <header>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+                <div class="container-fluid">
+                    <a href="#" class="navbar-brand">Ethernet Automatic Test System</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarmenu">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarmenu">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item me-4">
+                                <a href="{{ url_for('index') }}" class="nav-link {% if current_url == 'index' %}active{% endif %}">
+                                    Test
+                                </a>
+                            </li>
+                            <li class="nav-item me-4">
+                                <a href="{{ url_for('monitor') }}" class="nav-link  {% if current_url == 'monitor' %}active{% endif %}">
+                                    Monitor
+                                </a>
+                            </li>
+                            <li class="nav-item me-4 dropdown">
+                                <a href="#" class="nav-link dropdown-toggle {% if current_url == 'management' %}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Management
+                                </a>
+                                <ul class="dropdown-menu" data-bs-theme="dark">
+                                    <li><a href="{{ url_for('switch_management') }}" class="dropdown-item">Switch</a></li>
+                                    <li><a href="{{ url_for('server_management') }}" class="dropdown-item">Server</a></li>
+                                    <li><a href="{{ url_for('client_management') }}" class="dropdown-item">Client</a></li>
+                                    <li><a href="{{ url_for('cable_management') }}" class="dropdown-item">Ethernet Cable</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="flex-grow-1 container-fluid" style="margin-top: 65px;">
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'info' %}
+                        <div class="alert alert-info alert-dismissible fade show w-50" role="alert" id="autoCloseAlert">
+                        {% elif category == 'warning' %}
+                        <div class="alert alert-warning alert-dismissible fade show w-50" role="alert" id="autoCloseAlert">
+                        {% elif category == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show w-50" role="alert" id="autoCloseAlert">
+                        {% else %}
+                        <div class="alert alert-success alert-dismissible fade show w-50" role="alert" id="autoCloseAlert">
+                        {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" aria-hidden="true"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block contents %}{% endblock %}
+        </main>
+
+        <footer>
+            <small>Ethernet Automatic Test System &copy; 2026</small>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>
