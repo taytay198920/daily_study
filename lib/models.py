@@ -14,6 +14,7 @@ class SwitchModel(db.Model):
     model = db.Column(db.String(256), nullable=False, unique=True)
     description = db.Column(db.String(256), nullable=False)
     capabilities = db.Column(db.String(256), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
         return {
@@ -31,6 +32,7 @@ class ServerModel(db.Model):
     unit_no = db.Column(db.Integer, nullable=False)
     unit_sn = db.Column(db.String(128), nullable=False)
     username = db.Column(db.String(128), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
         return {
@@ -47,6 +49,7 @@ class ClientModel(db.Model):
     unit_no = db.Column(db.Integer, nullable=False)
     unit_sn = db.Column(db.String(128), nullable=False)
     username = db.Column(db.String(128), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
         return {
@@ -61,6 +64,7 @@ class CableModel(db.Model):
     __tablename__ = 'cable'
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(256), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
     def to_dict(self):
         return {

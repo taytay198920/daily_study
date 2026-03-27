@@ -4,11 +4,11 @@
 # @File     : app.py
 
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 
 from lib.config import db, APP_SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-from lib.models import ServerModel, SwitchModel, CableModel, ClientModel
+from lib.models import ServerModel, SwitchModel, CableModel, ClientModel, TestGroup
 from lib.handle_log import log
 
 
@@ -53,6 +53,152 @@ with app.app_context():
 @app.route('/')
 def index():
     return render_template('index.html', current_url='index')
+
+@app.route('/api/options')
+def get_options():
+    """获取所有下拉框选项数据"""
+    try:
+        clients = [{'id': c.id, 'unit_no': c.unit_no} for c in ClientModel.query.filter_by(is_active=True).all()]
+        servers = [{'id': s.id, 'unit_no': s.unit_no} for s in ServerModel.query.filter_by(is_active=True).all()]
+        switches = [{'id': sw.id, 'model': sw.model} for sw in SwitchModel.query.filter_by(is_active=True).all()]
+        cables = [{'id': c.id, 'description': c.description} for c in CableModel.query.filter_by(is_active=True).all()]
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'clients': clients,
+                'servers': servers,
+                'switches': switches,
+                'cables': cables
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test_groups', methods=['GET'])
+def get_test_groups():
+    """获取所有测试组"""
+    try:
+        groups = TestGroup.query.order_by(TestGroup.created_at.desc()).all()
+        groups_data = []
+        for group in groups:
+            groups_data.append({
+                'id': group.id,
+                'client': group.client.unit_no if group.client else None,
+                'client_id': group.client_id,
+                'server': group.server.unit_no if group.server else None,
+                'server_id': group.server_id,
+                'switch': group.switch.model if group.switch else None,
+                'switch_id': group.switch_id,
+                'cable': group.cable.description if group.cable else None,
+                'cable_id': group.cable_id,
+                'status': group.status,
+                'test_result': group.test_result,
+                'created_at': group.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        return jsonify({'success': True, 'data': groups_data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/test_groups', methods=['POST'])
+def create_test_group():
+    """创建新的测试组"""
+    try:
+        data = request.json
+        new_group = TestGroup(
+            client_id=data.get('client_id'),
+            server_id=data.get('server_id'),
+            switch_id=data.get('switch_id'),
+            cable_id=data.get('cable_id'),
+            status='pending'
+        )
+        db.session.add(new_group)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'id': new_group.id,
+                'client': new_group.client.unit_no if new_group.client else None,
+                'server': new_group.server.unit_no if new_group.server else None,
+                'switch': new_group.switch.model if new_group.switch else None,
+                'cable': new_group.cable.description if new_group.cable else None,
+                'status': new_group.status
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test_groups/<int:group_id>', methods=['PUT'])
+def update_test_group(group_id):
+    """更新测试组"""
+    try:
+        group = TestGroup.query.get_or_404(group_id)
+        data = request.json
+
+        if 'client_id' in data:
+            group.client_id = data['client_id']
+        if 'server_id' in data:
+            group.server_id = data['server_id']
+        if 'switch_id' in data:
+            group.switch_id = data['switch_id']
+        if 'cable_id' in data:
+            group.cable_id = data['cable_id']
+        if 'status' in data:
+            group.status = data['status']
+        if 'test_result' in data:
+            group.test_result = data['test_result']
+
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test_groups/<int:group_id>', methods=['DELETE'])
+def delete_test_group(group_id):
+    """删除测试组"""
+    try:
+        group = TestGroup.query.get_or_404(group_id)
+        db.session.delete(group)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test_groups/<int:group_id>/run', methods=['POST'])
+def run_test(group_id):
+    """运行测试"""
+    try:
+        group = TestGroup.query.get_or_404(group_id)
+        # group.status = 'running'
+        # db.session.commit()
+        log.info(f"client unit no: {group.client.unit_no}")
+        log.info(f"server unit no: {group.server.unit_no}")
+        log.info(f"switch model: {group.switch.model}")
+        log.info(f"cable: {group.cable.description}")
+
+        # 这里可以添加实际的测试逻辑
+        # 模拟异步测试
+        # import threading
+        # def perform_test():
+        #     import time
+        #     time.sleep(3)  # 模拟测试耗时
+        #     with app.app_context():
+        #         test_group = TestGroup.query.get(group_id)
+        #         test_group.status = 'passed'
+        #         test_group.test_result = f"Test completed successfully at {time.strftime('%Y-%m-%d %H:%M:%S')}"
+        #         db.session.commit()
+        #
+        # thread = threading.Thread(target=perform_test)
+        # thread.start()
+
+        return jsonify({'success': True, 'status': 'running'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/monitor')
 def monitor():
