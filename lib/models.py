@@ -84,6 +84,7 @@ class TestGroup(db.Model):
     test_result = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    test_config = db.Column(db.JSON, nullable=True, default={})
 
     # relationship
     client = db.relationship('ClientModel')

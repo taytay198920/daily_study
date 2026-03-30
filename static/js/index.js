@@ -58,7 +58,7 @@ function renderTestGroups() {
         // 显示空状态
         const emptyRow = document.createElement('tr');
         emptyRow.id = 'emptyRow';
-        emptyRow.innerHTML = '<td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> 暂无测试组，点击 "Add a new group" 添加新的测试组合</td>';
+        emptyRow.innerHTML = '<td colspan="8" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> There is no test group, click the "New group" button to add a new test group</td>';
         tbody.appendChild(emptyRow);
         return;
     }
@@ -156,8 +156,8 @@ function createGroupRow(group, rowNumber) {
                                 <div class="group-title">
                                     PowerManagement
                                     <div class="group-actions">
-                                        <button type="button" class="btn btn-outline-primary btn-sm select-all-power">全选</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm deselect-all-power">取消全选</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm select-all-power">Select All</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm deselect-all-power">Unselect All</button>
                                     </div>
                                 </div>
                                 <div class="power-group">
@@ -195,9 +195,9 @@ function createGroupRow(group, rowNumber) {
                                         <span class="mtu-title">MTU = 1500</span>
                                         <div class="group-actions">
                                             <button type="button"
-                                                class="btn btn-outline-primary btn-sm mtu1500-select-all">全选</button>
+                                                class="btn btn-outline-primary btn-sm mtu1500-select-all">Select All</button>
                                             <button type="button"
-                                                class="btn btn-outline-secondary btn-sm mtu1500-deselect-all">取消全选</button>
+                                                class="btn btn-outline-secondary btn-sm mtu1500-deselect-all">Unselect All</button>
                                         </div>
                                     </div>
             
@@ -255,9 +255,9 @@ function createGroupRow(group, rowNumber) {
                                         <span class="mtu-title">MTU = 9000</span>
                                         <div class="group-actions">
                                             <button type="button"
-                                                class="btn btn-outline-primary btn-sm mtu9000-select-all">全选</button>
+                                                class="btn btn-outline-primary btn-sm mtu9000-select-all">Select All</button>
                                             <button type="button"
-                                                class="btn btn-outline-secondary btn-sm mtu9000-deselect-all">取消全选</button>
+                                                class="btn btn-outline-secondary btn-sm mtu9000-deselect-all">Unselect All</button>
                                         </div>
                                     </div>
             
@@ -437,27 +437,26 @@ function bindModalEvents(row, groupId) {
 }
 
 // 收集配置并显示
-function collectAndShowConfig(modal, groupId) {
-    let selections = [];
+async function collectAndShowConfig(modal, groupId) {
+    const config = {
+        basic_test: {},
+        power_management: {},
+        iperf_test: {}
+    }
 
-    // Basic Test - 使用包含 groupId 的 ID
-    const pingTest = modal.querySelector(`#pingTest_${groupId}`);
-    if (pingTest?.checked) selections.push('✓ Ping Test');
+    const pingTest = modal.querySelector(`#pingTest_${groupId}`)
+    if (pingTest) {
+        config.basic_test.ping = pingTest.checked
+    }
 
-    // Power Management
-    const selectedPower = [];
-    const restartTest = modal.querySelector(`#restartTest_${groupId}`);
-    const shutdownTest = modal.querySelector(`#shutdownTest_${groupId}`);
-    const sleepTest = modal.querySelector(`#sleepTest_${groupId}`);
+    const restartTest = modal.querySelector(`#restartTest_${groupId}`)
+    const shutdownTest = modal.querySelector(`#shutdownTest_${groupId}`)
+    const sleepTest = modal.querySelector(`#sleepTest_${groupId}`)
 
-    if (restartTest?.checked) selectedPower.push('Restart');
-    if (shutdownTest?.checked) selectedPower.push('Shutdown');
-    if (sleepTest?.checked) selectedPower.push('Sleep');
-
-    if (selectedPower.length > 0) {
-        selections.push(`✓ PowerManagement: ${selectedPower.join(', ')}`);
-    } else {
-        selections.push('✗ PowerManagement: None selected');
+    config.power_management = {
+        restart: restartTest?.checked || false,
+        shutdown: shutdownTest?.checked || false,
+        sleep: sleepTest?.checked || false
     }
 
     // Iperf Test - MTU1500
@@ -473,14 +472,6 @@ function collectAndShowConfig(modal, groupId) {
         if (cb.checked) mtu1500Speeds.push(cb.value);
     });
 
-    if (mtu1500Protocols.length > 0 || mtu1500Speeds.length > 0) {
-        selections.push(`✓ Iperf Test - MTU1500:`);
-        if (mtu1500Protocols.length > 0) selections.push(`  Protocols: ${mtu1500Protocols.join(', ')}`);
-        if (mtu1500Speeds.length > 0) selections.push(`  Speeds: ${mtu1500Speeds.join(', ')}`);
-    } else {
-        selections.push(`✗ Iperf Test - MTU1500: No options selected`);
-    }
-
     // Iperf Test - MTU9000
     const mtu9000Protocols = [];
     const mtu9000ProtocolCheckboxes = modal.querySelectorAll('.mtu9000-protocol-checkbox');
@@ -494,15 +485,51 @@ function collectAndShowConfig(modal, groupId) {
         if (cb.checked) mtu9000Speeds.push(cb.value);
     });
 
-    if (mtu9000Protocols.length > 0 || mtu9000Speeds.length > 0) {
-        selections.push(`✓ Iperf Test - MTU9000:`);
-        if (mtu9000Protocols.length > 0) selections.push(`  Protocols: ${mtu9000Protocols.join(', ')}`);
-        if (mtu9000Speeds.length > 0) selections.push(`  Speeds: ${mtu9000Speeds.join(', ')}`);
-    } else {
-        selections.push(`✗ Iperf Test - MTU9000: No options selected`);
+    config.iperf_test = {
+        mtu1500: {
+            protocols: mtu1500Protocols,
+            speeds: mtu1500Speeds
+        },
+        mtu9000: {
+            protocols: mtu9000Protocols,
+            speeds: mtu9000Speeds
+        }
+    };
+
+    try {
+        // 保存配置到后端
+        const response = await fetch(`/api/test_groups/${groupId}/config`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ config: config })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // 可选：显示成功提示
+            const saveBtn = modal.querySelector('.save-config-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '✓ Saved!';
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+            }, 1500);
+
+            // 可以关闭模态框或保持打开
+            // const bsModal = bootstrap.Modal.getInstance(modal);
+            // bsModal.hide();
+        } else {
+            alert('Failed to save configuration: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error saving config:', error);
+        alert('Failed to save configuration');
     }
 
-    alert('Current test configuration for Group ' + groupId + ':\n' + selections.join('\n'));
+    // 可选：在控制台显示配置
+    console.log('Saved configuration for group', groupId, config);
 }
 
 // 添加新测试组（无闪烁）
@@ -510,10 +537,10 @@ async function addNewGroup() {
     if (isLoading) return;
 
     // 禁用按钮，防止重复点击
-    const addBtn = document.getElementById('addNewGroupBtn');
-    addBtn.disabled = true;
-    addBtn.classList.add('btn-loading');
-    addBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding...';
+    // const addBtn = document.getElementById('addNewGroupBtn');
+    // addBtn.disabled = true;
+    // addBtn.classList.add('btn-loading');
+    // addBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding...';
 
     try {
         // 创建空的测试组到后端
@@ -576,12 +603,13 @@ async function addNewGroup() {
     } catch (error) {
         console.error('Error adding test group:', error);
         alert('Failed to add test group');
-    } finally {
-        // 恢复按钮
-        addBtn.disabled = false;
-        addBtn.classList.remove('btn-loading');
-        addBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add a new group';
     }
+    // finally {
+    //     // 恢复按钮
+    //     addBtn.disabled = false;
+    //     addBtn.classList.remove('btn-loading');
+    //     addBtn.innerHTML = '<i class="bi bi-plus-circle"></i> New group';
+    // }
 }
 
 // 更新测试组（立即保存）
@@ -741,7 +769,7 @@ async function deleteTestGroup(groupId) {
                     const tbody = document.getElementById('testGroupBody');
                     const emptyRow = document.createElement('tr');
                     emptyRow.id = 'emptyRow';
-                    emptyRow.innerHTML = '<td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> 暂无测试组，点击 "Add a new group" 添加新的测试组合</td>';
+                    emptyRow.innerHTML = '<td colspan="8" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> There is no test group，click the "New group" button to add a new test group</td>';
                     tbody.appendChild(emptyRow);
                 } else {
                     // 重新编号

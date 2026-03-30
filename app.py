@@ -137,6 +137,7 @@ def update_test_group(group_id):
     try:
         group = TestGroup.query.get_or_404(group_id)
         data = request.json
+        log.info(f'update_test_group: {data}')
 
         if 'client_id' in data:
             group.client_id = data['client_id']
@@ -162,9 +163,25 @@ def delete_test_group(group_id):
     """删除测试组"""
     try:
         group = TestGroup.query.get_or_404(group_id)
+        log.info(f'delete_test_group: {group}')
         db.session.delete(group)
         db.session.commit()
         return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test_groups/<int:group_id>/config', methods=["POST"])
+def save_test_config(group_id):
+    try:
+        group = TestGroup.query.get_or_404(group_id)
+        data = request.json
+        group.test_config = data.get("config", {})
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Configuration saved successfully'
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -174,12 +191,14 @@ def run_test(group_id):
     """运行测试"""
     try:
         group = TestGroup.query.get_or_404(group_id)
+        test_config = group.test_config or {}
         # group.status = 'running'
         # db.session.commit()
         log.info(f"client unit no: {group.client.unit_no}")
         log.info(f"server unit no: {group.server.unit_no}")
         log.info(f"switch model: {group.switch.model}")
         log.info(f"cable: {group.cable.description}")
+        log.info(f"test config: {test_config}")
 
         # 这里可以添加实际的测试逻辑
         # 模拟异步测试
@@ -206,7 +225,8 @@ def monitor():
 
 @app.route('/switch_management')
 def switch_management():
-    return render_template('switch_management.html', current_url='management')
+    switches = SwitchModel.query.order_by(SwitchModel.id).all()
+    return render_template('switch_management.html', current_url='management', switches=switches)
 
 @app.route('/server_management')
 def server_management():

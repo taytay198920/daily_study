@@ -8,7 +8,7 @@ Index
 {% block contents %}
 <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 my-4">
     <h3><i class="bi bi-gear-wide-connected" style="color: blue"></i> Test Setup</h3>
-    <button class="btn btn-primary" id="addNewGroupBtn"><i class="bi bi-plus-circle"></i> Add a new group</button>
+    <button class="btn btn-primary" id="addNewGroupBtn"><i class="bi bi-plus-circle"></i> New group</button>
 </div>
 <div class="card">
     <div class="card-header">
@@ -32,14 +32,11 @@ Index
                 </thead>
                 <tbody id="testGroupBody">
                     <tr id="emptyRow">
-                        <td colspan="8" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox"></i> 暂无测试组，点击 "Add a new group" 添加新的测试组合
-                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='js/optimal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 {% endblock %}

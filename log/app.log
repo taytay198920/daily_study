@@ -1,8 +1,5 @@
-2026-03-28 00:29:16 - app.py - run_test - 179 - INFO - client unit no: 5898
-2026-03-28 00:29:16 - app.py - run_test - 180 - INFO - server unit no: 5421
-2026-03-28 00:29:16 - app.py - run_test - 181 - INFO - switch model: GS110MX
-2026-03-28 00:29:16 - app.py - run_test - 182 - INFO - cable: SAMZHE Cat.7 2m
-2026-03-28 00:29:28 - app.py - run_test - 179 - INFO - client unit no: 5898
-2026-03-28 00:29:28 - app.py - run_test - 180 - INFO - server unit no: 5421
-2026-03-28 00:29:28 - app.py - run_test - 181 - INFO - switch model: GS110MX
-2026-03-28 00:29:28 - app.py - run_test - 182 - INFO - cable: SAMZHE Cat.7 2m
+2026-03-30 22:02:57 - app.py - delete_test_group - 166 - INFO - delete_test_group: <TestGroup 1>
+2026-03-30 23:05:47 - app.py - update_test_group - 140 - INFO - update_test_group: {'client_id': 1}
+2026-03-30 23:05:49 - app.py - update_test_group - 140 - INFO - update_test_group: {'server_id': 2}
+2026-03-30 23:05:51 - app.py - update_test_group - 140 - INFO - update_test_group: {'switch_id': 1}
+2026-03-30 23:05:52 - app.py - update_test_group - 140 - INFO - update_test_group: {'cable_id': 1}

@@ -458,7 +458,6 @@ function createGroupRow(group, rowNumber) {
     return tr;
 }
 
-// 收集配置并显示
 function collectAndShowConfig(modal, groupId) {
     let selections = [];
 

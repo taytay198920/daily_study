@@ -2,5 +2,46 @@
 {% block title %}
 Switch Management
 {% endblock %}
-{% block content %}
+{% block contents %}
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 my-4">
+        <button class="btn btn-primary" id="addNewGroupBtn"><i class="bi bi-plus-circle"></i> New switch</button>
+        <form class="input-group ms-auto my-3" style="max-width: 250px;">
+        <input type="text" class="form-control" name="switch_model" placeholder="input the keyword" aria-label="search">
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </form>
+    </div>
+    <div class="table-responsive py-2">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col" class="fixed-col-1">No.</th>
+                <th scope="col" class="text-center">Make(Vendor)</th>
+                <th scope="col">Model</th>
+                <th scope="col" class="text-center">Description</th>
+                <th scope="col" class="text-center">Capabilities</th>
+                <th scope="col" class="fixed-col-2">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if switches %}
+                {% for switch in switches %}
+                <tr>
+                    <td class="fixed-col-1">{{ switches.index(switch) + 1 }}</td>
+                    <td class="text-center">{{ switch.vendor }}</td>
+                    <td>{{ switch.model }}</td>
+                    <td class="text-center">{{ switch.description }}</td>
+                    <td class="text-center">{{ switch.capabilities }}</td>
+                    <td>
+                        <button type="button" class="btn btn-warning btn-sm">
+                            Edit
+                        </button>
+                    </td>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}
